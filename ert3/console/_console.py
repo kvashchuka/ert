@@ -1,15 +1,28 @@
+import argparse
+import os
+import pathlib
+import shutil
+import sys
+from pathlib import Path
+
+import yaml
+
 import ert3
 
-import argparse
-from pathlib import Path
-import sys
-import yaml
+_EXAMPLES_ROOT = pathlib.Path(os.path.dirname(__file__)) / ".." / ".." / "examples"
 
 _ERT3_DESCRIPTION = (
     "ert3 is an ensemble-based tool for uncertainty studies.\n"
     "\nWARNING: the tool is currently in an extremely early stage and we refer "
     "all users to ert for real work!"
 )
+
+
+def _build_init_argparser(subparsers):
+    init_parser = subparsers.add_parser("init", help="Initialize an ERT3 workspace")
+    init_parser.add_argument(
+        "--example", help="Please provide the name of the example you want to run"
+    )
 
 
 def _build_run_argparser(subparsers):
@@ -52,7 +65,7 @@ def _build_argparser():
     parser = argparse.ArgumentParser(description=_ERT3_DESCRIPTION)
     subparsers = parser.add_subparsers(dest="sub_cmd", help="ert3 commands")
 
-    subparsers.add_parser("init", help="Initialize an ERT3 workspace")
+    _build_init_argparser(subparsers)
     _build_run_argparser(subparsers)
     _build_export_argparser(subparsers)
     _build_record_argparser(subparsers)
@@ -110,7 +123,22 @@ def _main():
         parser.print_help()
         return
     if args.sub_cmd == "init":
-        ert3.workspace.initialize(Path.cwd())
+        if args.example is not None:
+            _EXAMPLE_NAME = args.example
+            from_dir = _EXAMPLES_ROOT / _EXAMPLE_NAME
+            to_dir = Path.cwd() / _EXAMPLE_NAME
+
+            if not os.path.isdir(to_dir):
+                # example was not yet copied
+                shutil.copytree(from_dir, to_dir)
+            else:
+                # example was already copied
+                raise ert3.exceptions.IllegalWorkspaceOperation(
+                    f"The example {_EXAMPLE_NAME} was already copied before."
+                )
+            ert3.workspace.initialize(to_dir)
+        else:
+            ert3.workspace.initialize(Path.cwd())
         return
 
     # Commands that does requires an ert workspace
