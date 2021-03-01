@@ -128,13 +128,18 @@ def _main():
             from_dir = _EXAMPLES_ROOT / _EXAMPLE_NAME
             to_dir = Path.cwd() / _EXAMPLE_NAME
 
+            if not os.path.isdir(from_dir):
+                raise ert3.exceptions.IllegalWorkspaceOperation(
+                    f"There is no example {_EXAMPLE_NAME} in ert/examples."
+                )
+
             if not os.path.isdir(to_dir):
                 # example was not yet copied
                 shutil.copytree(from_dir, to_dir)
             else:
                 # example was already copied
                 raise ert3.exceptions.IllegalWorkspaceOperation(
-                    f"The example {_EXAMPLE_NAME} was already copied before."
+                    f"Your working directory already contains example {_EXAMPLE_NAME}."
                 )
             ert3.workspace.initialize(to_dir)
         else:

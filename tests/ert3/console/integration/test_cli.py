@@ -52,6 +52,29 @@ def test_cli_init(tmpdir):
         ert3.console.main()
 
 
+def test_cli_init_example(tmpdir):
+    workspace = tmpdir / _POLY_WORKSPACE_NAME
+    shutil.copytree(_POLY_WORKSPACE, workspace)
+    workspace.chdir()
+
+    args = ["ert3", "init", "--example", "something"]
+    with patch.object(sys, "argv", args):
+        with pytest.raises(SystemExit) as error:
+            ert3.console.main()
+        assert "There is no example something in ert/examples." in str(error.value)
+
+    args = ["ert3", "init", "--example", "polynomial"]
+    with patch.object(sys, "argv", args):
+        ert3.console.main()
+
+    with patch.object(sys, "argv", args):
+        with pytest.raises(SystemExit) as error:
+            ert3.console.main()
+        assert "Your working directory already contains example polynomial" in str(
+            error.value
+        )
+
+
 def test_cli_init_twice(tmpdir):
     workspace = tmpdir / _POLY_WORKSPACE_NAME
     shutil.copytree(_POLY_WORKSPACE, workspace)
