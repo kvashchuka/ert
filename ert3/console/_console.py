@@ -9,7 +9,8 @@ import yaml
 
 import ert3
 
-_EXAMPLES_ROOT = pathlib.Path(os.path.dirname(__file__)) / ".." / ".." / "examples"
+import tempfile
+import git
 
 _ERT3_DESCRIPTION = (
     "ert3 is an ensemble-based tool for uncertainty studies.\n"
@@ -88,6 +89,54 @@ def _run(workspace, args):
     )
 
 
+def _fetch_from_git(to_dir, example_name):
+    git_url = 'git@github.com:equinor/ert.git'
+    t = tempfile.mkdtemp()
+    # Clone into temporary dir
+    git.Repo.clone_from(git_url, t, branch='master', depth=1)
+    # Copy desired file from temporary dir
+    shutil.move(os.path.join(t, 'examples', example_name), to_dir)
+    # Remove temporary dir
+    shutil.rmtree(t)
+
+
+def _init(args):
+    assert args.sub_cmd == "init"
+
+    _ROOT = os.path.abspath(pathlib.Path(os.path.dirname(__file__)) / ".." / "..")
+    _EXAMPLE_NAME = args.example
+
+    if args.example is not None:
+        # here we deal with "--example"
+        if os.path.basename(_ROOT) == "ert":
+            # we think we are in ert repo
+            from_dir = _ROOT + "/examples/" + _EXAMPLE_NAME
+            example_dir = Path.cwd() / _EXAMPLE_NAME
+
+            if not os.path.isdir(from_dir):
+                raise ert3.exceptions.IllegalWorkspaceOperation(
+                    f"There is no example {_EXAMPLE_NAME} in {_ROOT}/examples/ folder."
+                )
+
+            if not os.path.isdir(example_dir):
+                # example was not yet copied
+                shutil.copytree(from_dir, example_dir)
+            else:
+                # example was already copied
+                raise ert3.exceptions.IllegalWorkspaceOperation(
+                    f"Your working directory already contains example {_EXAMPLE_NAME}."
+                )
+        else:
+            # ert3 is not in ert folder, so we fetch example from GitHub
+            _fetch_from_git(Path.cwd(), _EXAMPLE_NAME)
+            example_dir = Path.cwd() / _EXAMPLE_NAME
+
+        print(example_dir)
+        ert3.workspace.initialize(example_dir)
+    else:
+        ert3.workspace.initialize(Path.cwd())
+
+
 def _export(workspace, args):
     assert args.sub_cmd == "export"
     ert3.engine.export(workspace, args.experiment_name)
@@ -122,29 +171,9 @@ def _main():
     if args.sub_cmd is None:
         parser.print_help()
         return
+
     if args.sub_cmd == "init":
-        if args.example is not None:
-            _EXAMPLE_NAME = args.example
-            from_dir = _EXAMPLES_ROOT / _EXAMPLE_NAME
-            to_dir = Path.cwd() / _EXAMPLE_NAME
-
-            if not os.path.isdir(from_dir):
-                raise ert3.exceptions.IllegalWorkspaceOperation(
-                    f"There is no example {_EXAMPLE_NAME} in ert/examples."
-                )
-
-            if not os.path.isdir(to_dir):
-                # example was not yet copied
-                shutil.copytree(from_dir, to_dir)
-            else:
-                # example was already copied
-                raise ert3.exceptions.IllegalWorkspaceOperation(
-                    f"Your working directory already contains example {_EXAMPLE_NAME}."
-                )
-            ert3.workspace.initialize(to_dir)
-        else:
-            ert3.workspace.initialize(Path.cwd())
-        return
+        _init(args)
 
     # Commands that does requires an ert workspace
     workspace = ert3.workspace.load(Path.cwd())

@@ -7,6 +7,11 @@ import shutil
 import sys
 from unittest.mock import patch
 
+from git import Repo
+import tempfile
+import git
+
+
 _EXAMPLES_ROOT = (
     pathlib.Path(os.path.dirname(__file__)) / ".." / ".." / ".." / ".." / "examples"
 )
@@ -42,6 +47,17 @@ def test_cli_no_args(tmpdir):
         ert3.console.main()
 
 
+def test_fetch_from_git(tmpdir):
+    git_url = "git@github.com:equinor/ert.git"
+    t = tempfile.mkdtemp()
+    # Clone into temporary dir
+    git.Repo.clone_from(git_url, t, branch="master", depth=1)
+    # Copy desired file from temporary dir
+    shutil.move(os.path.join(t, "examples"), tmpdir)
+    # Remove temporary dir
+    shutil.rmtree(t)
+
+
 def test_cli_init(tmpdir):
     workspace = tmpdir / _POLY_WORKSPACE_NAME
     shutil.copytree(_POLY_WORKSPACE, workspace)
@@ -57,12 +73,6 @@ def test_cli_init_example(tmpdir):
     shutil.copytree(_POLY_WORKSPACE, workspace)
     workspace.chdir()
 
-    args = ["ert3", "init", "--example", "something"]
-    with patch.object(sys, "argv", args):
-        with pytest.raises(SystemExit) as error:
-            ert3.console.main()
-        assert "There is no example something in ert/examples." in str(error.value)
-
     args = ["ert3", "init", "--example", "polynomial"]
     with patch.object(sys, "argv", args):
         ert3.console.main()
@@ -73,6 +83,12 @@ def test_cli_init_example(tmpdir):
         assert "Your working directory already contains example polynomial" in str(
             error.value
         )
+
+    args = ["ert3", "init", "--example", "something"]
+    with patch.object(sys, "argv", args):
+        with pytest.raises(SystemExit) as error:
+            ert3.console.main()
+        assert "There is no example something in ert/examples" in str(error.value)
 
 
 def test_cli_init_twice(tmpdir):
