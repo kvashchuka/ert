@@ -63,7 +63,8 @@ def test_cli_init_subfolder(workspace):
             ert3.console._console._main()
 
 
-def test_cli_init_invalid_example(tmpdir):
+@pytest.mark.requires_ert_storage
+def test_cli_init_invalid_example(tmpdir, ert_storage):
     with tmpdir.as_cwd():
         args = ["ert3", "init", "--example", "something"]
         with patch.object(sys, "argv", args):
@@ -73,7 +74,8 @@ def test_cli_init_invalid_example(tmpdir):
                 ert3.console.main()
 
 
-def test_cli_init_example(tmpdir):
+@pytest.mark.requires_ert_storage
+def test_cli_init_example(tmpdir, ert_storage):
     with tmpdir.as_cwd():
         args = ["ert3", "init", "--example", "polynomial"]
         with patch.object(sys, "argv", args):
@@ -84,7 +86,8 @@ def test_cli_init_example(tmpdir):
             assert len(polynomial_path.listdir()) > 0
 
 
-def test_cli_init_example_twice(tmpdir):
+@pytest.mark.requires_ert_storage
+def test_cli_init_example_twice(tmpdir, ert_storage):
     with tmpdir.as_cwd():
         args = ["ert3", "init", "--example", "polynomial"]
         with patch.object(sys, "argv", args):

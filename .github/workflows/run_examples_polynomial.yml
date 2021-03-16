@@ -35,7 +35,8 @@ jobs:
 
     - name: Run polynomial demo
       run: |
-        pushd examples/polynomial
+        ert3 init --example polynomial
+        pushd polynomial
         ./run_demo
         popd
 
@@ -93,6 +94,7 @@ jobs:
 
     - name: Run polynomial demo
       run: |
-        pushd examples/polynomial
+        ert3 init --example polynomial
+        pushd polynomial
         ./run_demo
         popd
