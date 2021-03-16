@@ -36,6 +36,7 @@ def test_cli_init(tmpdir, ert_storage):
             ert3.console.main()
 
 
+<<<<<<< HEAD
 def test_cli_init_example(tmpdir):
     with tmpdir.as_cwd():
         args = ["ert3", "init", "--example", "something"]
@@ -59,6 +60,9 @@ def test_cli_init_example(tmpdir):
 
 @pytest.mark.requires_ert_storage
 def test_cli_init_twice(tmpdir, ert_storage):
+=======
+def test_cli_init_twice(tmpdir):
+>>>>>>> Split test
     with tmpdir.as_cwd():
         args = ["ert3", "init"]
         with patch.object(sys, "argv", args):
@@ -82,6 +86,37 @@ def test_cli_init_subfolder(workspace):
             match="Already inside an ERT workspace",
         ):
             ert3.console._console._main()
+
+
+def test_cli_init_invalid_example(tmpdir):
+    with tmpdir.as_cwd():
+        args = ["ert3", "init", "--example", "something"]
+        with patch.object(sys, "argv", args):
+            with pytest.raises(
+                SystemExit, match="Example something is not a valid ert3 example."
+            ):
+                ert3.console.main()
+
+
+def test_cli_init_example(tmpdir):
+    with tmpdir.as_cwd():
+        args = ["ert3", "init", "--example", "polynomial"]
+        with patch.object(sys, "argv", args):
+            ert3.console.main()
+
+
+def test_cli_init_example_twice(tmpdir):
+    with tmpdir.as_cwd():
+        args = ["ert3", "init", "--example", "polynomial"]
+        with patch.object(sys, "argv", args):
+            ert3.console.main()
+
+        with patch.object(sys, "argv", args):
+            with pytest.raises(
+                SystemExit,
+                match="Your working directory already contains example polynomial",
+            ):
+                ert3.console.main()
 
 
 @pytest.mark.requires_ert_storage
