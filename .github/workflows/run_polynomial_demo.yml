@@ -29,4 +29,7 @@ jobs:
 
     - name: Run polynomial demo
       run: |
-        ./examples/polynomial/run_demo
+        ert3 init --example polynomial
+        pushd polynomial
+        ./run_demo
+        popd

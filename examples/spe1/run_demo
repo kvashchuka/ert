@@ -7,9 +7,6 @@
 
 set -e
 
-ert3 init --example spe1
-pushd spe1
-
 # TODO: This is a hack because of the lack of blob records. Hence, we currently
 # copy the datafile to the compute nodes and this environment variable makes
 # the workspace transportable.
@@ -25,5 +22,3 @@ ert3 export doe
 
 ert3 run sensitivity
 ert3 export sensitivity
-
-popd
