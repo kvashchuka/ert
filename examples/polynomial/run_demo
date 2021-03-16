@@ -1,9 +1,6 @@
 #!/usr/bin/env bash
 set -e
 
-ert3 init --example polynomial
-pushd polynomial
-
 ert3 run evaluation
 ert3 status
 
@@ -34,5 +31,3 @@ ert3 export uniform_sensitivity
 
 ert3 run function_evaluation
 ert3 export function_evaluation
-
-popd
