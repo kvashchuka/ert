@@ -19,10 +19,16 @@ _ERT3_DESCRIPTION = (
 
 def _build_init_argparser(subparsers):
     init_parser = subparsers.add_parser("init", help="Initialize an ERT3 workspace")
+    pkg_examples_path = pathlib.Path(pkg.resource_filename("ert", "../examples"))
+    ert_example_names = []
+    for example in pkg_examples_path.iterdir():
+        if example.is_dir() and "__" not in example.name:
+            ert_example_names.append(example.name)
     init_parser.add_argument(
         "--example",
         help="Name of the example that would be copied "
-        "to the working directory and initialised",
+        "to the working directory and initialised.\n"
+        f"The available examples are: {', '.join(ert_example_names)}",
     )
 
 
@@ -97,10 +103,10 @@ def _init(args):
     if args.example is None:
         ert3.workspace.initialize(Path.cwd())
     else:
-        _EXAMPLE_NAME = args.example
+        example_name = args.example
         pkg_examples_path = pathlib.Path(pkg.resource_filename("ert", "../examples"))
-        pkg_example_path = pkg_examples_path / _EXAMPLE_NAME
-        wd_example_path = Path.cwd() / _EXAMPLE_NAME
+        pkg_example_path = pkg_examples_path / example_name
+        wd_example_path = Path.cwd() / example_name
         # check that examples folder exist
         if not pkg_examples_path.exists():
             raise ert3.exceptions.IllegalWorkspaceOperation(
@@ -109,7 +115,7 @@ def _init(args):
         # check that examples folder contains provided _EXAMPLE_NAME
         if not pkg_example_path.exists():
             raise ert3.exceptions.IllegalWorkspaceOperation(
-                f"Example {_EXAMPLE_NAME} is not a valid ert3 example."
+                f"Example {example_name} is not a valid ert3 example."
             )
         if not wd_example_path.is_dir():
             # example was not yet copied
@@ -117,7 +123,7 @@ def _init(args):
         else:
             # there is already folder "_EXAMPLE_NAME" in the working directory
             raise ert3.exceptions.IllegalWorkspaceOperation(
-                f"Your working directory already contains example {_EXAMPLE_NAME}."
+                f"Your working directory already contains example {example_name}."
             )
         ert3.workspace.initialize(wd_example_path)
 
