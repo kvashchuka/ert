@@ -103,6 +103,10 @@ def test_cli_init_example(tmpdir):
         args = ["ert3", "init", "--example", "polynomial"]
         with patch.object(sys, "argv", args):
             ert3.console.main()
+        polynomial_path = tmpdir / "polynomial"
+        if polynomial_path.exists() and polynomial_path.isdir():
+            # check that copied polynomial example is not an empty directory
+            assert len(polynomial_path.listdir()) > 0
 
 
 def test_cli_init_example_twice(tmpdir):
