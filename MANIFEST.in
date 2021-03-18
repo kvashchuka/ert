@@ -1,0 +1,3 @@
+include ert3/examples/*
+include ert_gui/resources/*
+include ert_logging/*

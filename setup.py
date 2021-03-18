@@ -12,9 +12,6 @@ def package_files(directory):
     return paths
 
 
-extra_files = package_files("ert_gui/resources/")
-logging_configuration = package_files("ert_logging/")
-
 setup(
     name="ert",
     author="Equinor ASA",
@@ -25,7 +22,6 @@ setup(
         "console_scripts": "ert3=ert3.console:main",
     },
     packages=find_packages(exclude=["tests*"]),
-    package_data={"ert_gui": extra_files, "ert_logging": logging_configuration},
     include_package_data=True,
     license="Open Source",
     long_description=open("README.md").read(),
