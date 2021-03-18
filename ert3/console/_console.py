@@ -18,7 +18,7 @@ _ERT3_DESCRIPTION = (
 
 def _build_init_argparser(subparsers):
     init_parser = subparsers.add_parser("init", help="Initialize an ERT3 workspace")
-    pkg_examples_path = pathlib.Path(pkg.resource_filename("ert", "../examples"))
+    pkg_examples_path = pathlib.Path(pkg.resource_filename("ert3", "examples"))
     ert_example_names = []
     for example in pkg_examples_path.iterdir():
         if example.is_dir() and "__" not in example.name:
@@ -103,7 +103,7 @@ def _init(args):
         ert3.workspace.initialize(pathlib.Path.cwd())
     else:
         example_name = args.example
-        pkg_examples_path = pathlib.Path(pkg.resource_filename("ert", "../examples"))
+        pkg_examples_path = pathlib.Path(pkg.resource_filename("ert3", "examples"))
         pkg_example_path = pkg_examples_path / example_name
         wd_example_path = pathlib.Path.cwd() / example_name
         # check that examples folder exist
