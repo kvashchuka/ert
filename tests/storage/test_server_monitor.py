@@ -1,10 +1,13 @@
 import pytest
 import signal
 import requests
-from json import JSONDecodeError
 from textwrap import dedent
 from pathlib import Path
-from ert_shared.storage.server_monitor import ServerMonitor, TimeoutError
+from ert_shared.storage.server_monitor import (
+    ServerBootFail,
+    ServerMonitor,
+    TimeoutError,
+)
 from ert_shared.storage import connection
 
 
@@ -81,7 +84,7 @@ os.write(fd, b"This isn't valid json (I hope)")
 """
 )
 def test_authtoken_wrong_json(server):
-    with pytest.raises(JSONDecodeError):
+    with pytest.raises(ServerBootFail):
         server.fetch_connection_info()
 
 
@@ -125,13 +128,12 @@ def test_json_exists(tmpdir):
         with open(str(tmpdir / "storage_server.json"), "w") as f:
             f.write("this is a json file")
 
-        with pytest.raises(RuntimeError):
+        with pytest.raises(SystemExit):
             ServerMonitor()
 
 
 def test_integration(request, tmpdir):
     """Actually start the server, wait for it to be online and do a health check"""
-
     with tmpdir.as_cwd():
         server = ServerMonitor()
         server.start()
@@ -156,3 +158,22 @@ def test_integration(request, tmpdir):
         # Global connection info no longer valid
         with pytest.raises(RuntimeError):
             connection.get_info()
+
+
+def test_integration_auth(request, tmpdir):
+    """Start the server, wait for it to be online and then do a health check with an
+    invalid auth"""
+    with tmpdir.as_cwd():
+        server = ServerMonitor()
+        server.start()
+        request.addfinalizer(lambda: server.shutdown())
+
+        # No auth
+        resp = requests.get(f"{server.fetch_url()}/healthcheck")
+        assert resp.status_code == 401
+
+        # Invalid auth
+        resp = requests.get(
+            f"{server.fetch_url()}/healthcheck", auth=("__token__", "invalid-token")
+        )
+        assert resp.status_code == 403

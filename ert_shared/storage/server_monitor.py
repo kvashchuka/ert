@@ -15,8 +15,12 @@ def empty(arr):
     return len(arr) == 0
 
 
+class ServerBootFail(RuntimeError):
+    pass
+
+
 class ServerMonitor(threading.Thread):
-    EXEC_ARGS = [sys.executable, "-m", "ert_shared.storage.http_server"]
+    EXEC_ARGS = [sys.executable, "-m", "ert_shared.storage"]
     TIMEOUT = 20  # Wait 20s for the server to start before panicking
     _instance = None
 
@@ -31,16 +35,17 @@ class ServerMonitor(threading.Thread):
         self._server_info_lock = threading.Lock()
         self._server_info_lock.acquire()
 
+        env = os.environ.copy()
         args = []
         if not lockfile:
             args.append("--disable-lockfile")
         if rdb_url:
             args.extend(("--rdb-url", rdb_url))
+            env["ERT_STORAGE_DB"] = str(rdb_url)
 
         fd_read, fd_write = os.pipe()
         self._comm_pipe = os.fdopen(fd_read)
 
-        env = os.environ.copy()
         env["ERT_COMM_FD"] = str(fd_write)
         self._proc = Popen(
             self.EXEC_ARGS + args,
@@ -70,13 +75,8 @@ class ServerMonitor(threading.Thread):
 
         try:
             self._connection_info = json.loads(comm_buf.getvalue())
-
-            curl = f"curl -u '__token__:{self._connection_info['authtoken']}' {self._connection_info['urls'][0]}/ensembles"
-
-            print("Storage server is ready to accept requests. Listening on:")
-            for url in self._connection_info["urls"]:
-                print(f"  {url}")
-            print(f"\nUse `{curl}` to test")
+        except json.JSONDecodeError:
+            self._connection_info = ServerBootFail()
         except Exception as e:
             self._connection_info = e
 
@@ -132,7 +132,13 @@ class ServerMonitor(threading.Thread):
 
         """
         if (Path.cwd() / "storage_server.json").exists():
-            raise RuntimeError("storage_server.json exists")
+            print(
+                "A file called storage_server.json is present from this location. "
+                "This indicates there is already a ert instance running. If you are "
+                "certain that is not the case, try to delete the file and try "
+                "again."
+            )
+            sys.exit(1)
 
     @classmethod
     def get_instance(cls):

@@ -1,5 +1,6 @@
 import sys
 import logging
+from copy import deepcopy
 
 
 class _Feature:
@@ -9,12 +10,22 @@ class _Feature:
 
 
 class FeatureToggling:
-    _conf = {
+    _conf_original = {
         "new-storage": _Feature(
             default_enabled=False,
-            msg="The new storage solution is experimental! Thank you for testing our new features."
+            msg="The new storage solution is experimental! Thank you for testing our new features.",
+        ),
+        "ensemble-evaluator": _Feature(
+            default_enabled=False,
+            msg="The new ensemble evaluator is experimental! "
+            "The new evaluator will offer the user an expressive, "
+            "high-level configuration system in YAML, as "
+            "well as evaluating ensembles in a concurrent, cloud-ready "
+            "and distributed way.",
         ),
     }
+
+    _conf = deepcopy(_conf_original)
 
     @staticmethod
     def is_enabled(feature_name):
@@ -54,6 +65,10 @@ class FeatureToggling:
         default_state = FeatureToggling._conf[feature_name].is_enabled
         arg_default_state = "disable" if default_state else "enable"
         return "{}-{}".format(arg_default_state, feature_name)
+
+    @staticmethod
+    def reset():
+        FeatureToggling._conf = deepcopy(FeatureToggling._conf_original)
 
 
 def feature_enabled(feature_name):

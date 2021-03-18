@@ -7,7 +7,7 @@ from argparse import ArgumentParser, ArgumentTypeError
 from contextlib import contextmanager
 from ert_shared import clear_global_state
 from ert_shared.cli.main import run_cli
-from ert_shared.storage.http_server import run_server
+from ert_shared.storage.main import run_server
 from ert_shared.cli import (
     ENSEMBLE_SMOOTHER_MODE,
     ENSEMBLE_EXPERIMENT_MODE,
@@ -162,6 +162,13 @@ def get_ert_parser(parser=None):
     )
     ert_vis_parser.set_defaults(func=launch_visualization_plugin)
     ert_vis_parser.add_argument("--name", "-n", type=str, default="Webviz-ERT")
+    ert_vis_parser.add_argument(
+        "--project",
+        "-p",
+        type=str,
+        help="Path to folder running ert storage server",
+        default=os.getcwd(),
+    )
     ert_vis_parser.add_argument(
         "--verbose", action="store_true", help="Show verbose output.", default=False
     )
@@ -378,13 +385,6 @@ def start_ert_server():
             monitor.shutdown()
 
 
-@feature_enabled("new-storage")
-def initialize_databases():
-    from ert_shared.storage import ERT_STORAGE
-
-    ERT_STORAGE.initialize()
-
-
 def main():
     import ert_logging  # Only use ert logger config when running ERT
     import locale
@@ -397,7 +397,6 @@ def main():
         logger.setLevel("DEBUG")
     FeatureToggling.update_from_args(args)
 
-    initialize_databases()
     with start_ert_server(), ErtPluginContext():
         args.func(args)
 

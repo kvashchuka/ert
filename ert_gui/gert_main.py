@@ -33,7 +33,8 @@ from ert_gui.tools.plot import PlotTool
 from ert_gui.tools.plugins import PluginHandler, PluginsTool
 from ert_gui.tools.run_analysis import RunAnalysisTool
 from ert_gui.tools.workflows import WorkflowsTool
-from ert_shared.storage.client import create_client
+from ert_shared.feature_toggling import FeatureToggling
+
 import os
 from res.enkf import EnKFMain, ResConfig
 from res.util import ResLog
@@ -47,7 +48,6 @@ import time
 def run_gui(args):
     app = QApplication([])  # Early so that QT is initialized before other imports
     app.setWindowIcon(resourceIcon("application/window_icon_cutout"))
-
     res_config = ResConfig(args.config)
     os.chdir(res_config.config_path)
     ert = EnKFMain(res_config, strict=True, verbose=args.verbose)
@@ -75,7 +75,9 @@ def _start_window(ert, args):
     window = _setup_main_window(ert, args)
 
     minimum_splash_screen_time = 2
-    sleep_time_left = minimum_splash_screen_time - (time.time() - splash_screen_start_time)
+    sleep_time_left = minimum_splash_screen_time - (
+        time.time() - splash_screen_start_time
+    )
     if sleep_time_left > 0:
         time.sleep(sleep_time_left)
 
@@ -98,6 +100,7 @@ def _start_window(ert, args):
         )
 
     return window
+
 
 def _check_locale():
     # There seems to be a setlocale() call deep down in the initialization of
@@ -122,15 +125,16 @@ def _check_locale():
 
 def _setup_main_window(ert, args):
     config_file = args.config
-    storage_client = create_client()
-    window = GertMainWindow(config_file, storage_client)
-    window.setWidget(SimulationPanel(config_file, storage_client))
+    window = GertMainWindow(config_file)
+    window.setWidget(SimulationPanel(config_file))
     plugin_handler = PluginHandler(ert, ert.getWorkflowList().getPluginJobs(), window)
     help_tool = HelpTool("ERT", window)
 
-    window.addDock("Configuration Summary", SummaryPanel(), area=Qt.BottomDockWidgetArea)
+    window.addDock(
+        "Configuration Summary", SummaryPanel(), area=Qt.BottomDockWidgetArea
+    )
     window.addTool(IdeTool(config_file, help_tool))
-    window.addTool(PlotTool(config_file, storage_client))
+    window.addTool(PlotTool(config_file))
     window.addTool(ExportTool())
     window.addTool(WorkflowsTool())
     window.addTool(ManageCasesTool())

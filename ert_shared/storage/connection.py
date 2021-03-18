@@ -58,3 +58,40 @@ def set_global_info(project_path: Union[str, Path]):
     if path.is_symlink():
         path.unlink()
     path.symlink_to(_json_path(project_path))
+
+
+def get_project_id() -> Path:
+    """Return a path to `storage_server.json`."""
+
+    if "XDG_RUNTIME_DIR" in os.environ:
+        project_path = Path(os.environ["XDG_RUNTIME_DIR"]) / "ert"
+    else:
+        project_path = Path(f"/tmp/ert-{getpass.getuser()}")
+    json_path = project_path / "storage_server.json"
+    if json_path.exists():
+        return json_path.resolve().parent
+    raise RuntimeError("No ert storage server found!")
+
+
+def autostart(project_path: str = None) -> str:
+    from .server_monitor import ServerMonitor
+
+    # Try to use project specified in args (Defaults to cwd)
+    try:
+        get_info(project_path)
+        return os.path.realpath(project_path)
+    except RuntimeError:
+        pass
+
+    # Try to use globally registered ERT Storage
+    try:
+        path = get_project_id()
+        return str(path.absolute())
+    except RuntimeError:
+        pass
+
+    # Try to start ERT Storage
+    monitor = ServerMonitor.get_instance()
+    monitor.start()
+    monitor.fetch_connection_info()
+    return os.path.realpath(os.getcwd())

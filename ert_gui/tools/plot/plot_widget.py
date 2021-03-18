@@ -5,7 +5,7 @@ from qtpy.QtCore import Qt, Signal
 from qtpy.QtWidgets import QWidget, QVBoxLayout, QAction
 
 from matplotlib.figure import Figure
-from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas, NavigationToolbar2QT
+from matplotlib.backends.backend_qt5agg import FigureCanvas, NavigationToolbar2QT
 
 from ert_gui.ertwidgets import resourceIcon
 
@@ -70,7 +70,9 @@ class PlotWidget(QWidget):
     def updatePlot(self, plot_context, case_to_data_map, observations):
         self.resetPlot()
         try:
-            self._plotter.plot(self._figure, plot_context, case_to_data_map, observations)
+            self._plotter.plot(
+                self._figure, plot_context, case_to_data_map, observations
+            )
             self._canvas.draw()
         except Exception as e:
             exc_type, exc_value, exc_tb = sys.exc_info()
@@ -79,4 +81,6 @@ class PlotWidget(QWidget):
             sys.stderr.write("Exception type: %s\n" % exc_type.__name__)
             sys.stderr.write("%s\n" % e)
             sys.stderr.write("%s\n" % ("-" * 80))
-            sys.stderr.write("An error occurred during plotting. This stack trace is helpful for diagnosing the problem.")
+            sys.stderr.write(
+                "An error occurred during plotting. This stack trace is helpful for diagnosing the problem."
+            )

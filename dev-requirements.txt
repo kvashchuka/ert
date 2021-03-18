@@ -1,9 +1,11 @@
 black
+flaky
 pytest<6
 pytest-qt
 schemathesis==1.3.4
 sphinx
 sphinx-argparse
 sphinx_rtd_theme
-pytest-flask-sqlalchemy
+pytest-asyncio
 requests
+pytest-timeout

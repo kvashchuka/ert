@@ -27,7 +27,6 @@ from ert_gui.ertwidgets import resourceImage
 
 
 class AboutDialog(QDialog):
-
     def __init__(self, parent):
         QDialog.__init__(self, parent)
 
@@ -45,16 +44,8 @@ class AboutDialog(QDialog):
 
         self.setLayout(main_layout)
 
-
     def createTopLayout(self):
         top_layout = QHBoxLayout()
-
-        image_label = QLabel()
-        image = resourceImage("splash.png")
-        image_label.setPixmap(image.scaled(200, 240, Qt.KeepAspectRatio))
-
-        top_layout.addWidget(image_label)
-
         top_layout.addLayout(self.createInfoLayout(), 1)
 
         return top_layout
@@ -82,17 +73,19 @@ class AboutDialog(QDialog):
 
         version.setAlignment(Qt.AlignHCenter)
         version.setText(
-            "Versions: ecl:%s    res:%s    ert:%s" % (ecl.__version__, res.__version__, ert_gui.__version__))
+            "Versions: ecl:%s    res:%s    ert:%s"
+            % (ecl.__version__, res.__version__, ert_gui.__version__)
+        )
         info_layout.addWidget(version)
 
         info_layout.addStretch(5)
 
         return info_layout
 
-
     def createGplLayout(self):
         gpl = QLabel()
-        gpl.setText("ERT is free software: you can redistribute it and/or modify \
+        gpl.setText(
+            'ERT is free software: you can redistribute it and/or modify \
           it under the terms of the GNU General Public License as published by \
           the Free Software Foundation, either version 3 of the License, or \
           (at your option) any later version. <br> <br>\
@@ -101,7 +94,8 @@ class AboutDialog(QDialog):
           WARRANTY; without even the implied warranty of MERCHANTABILITY or \
           FITNESS FOR A PARTICULAR PURPOSE.  <br> <br>\
           \
-          See the GNU General Public License at <a href=\"http://www.gnu.org/licenses/gpl.html\">www.gnu.org</a> for more details. ")
+          See the GNU General Public License at <a href="http://www.gnu.org/licenses/gpl.html">www.gnu.org</a> for more details. '
+        )
         gpl.setWordWrap(True)
         gpl_layout = QVBoxLayout()
         gpl_layout.addWidget(gpl)
