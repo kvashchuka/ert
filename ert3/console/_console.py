@@ -18,7 +18,7 @@ _ERT3_DESCRIPTION = (
 
 def _build_init_argparser(subparsers):
     init_parser = subparsers.add_parser("init", help="Initialize an ERT3 workspace")
-    pkg_examples_path = pathlib.Path(pkg.resource_filename("ert3", "examples"))
+    pkg_examples_path = _get_ert3_examples_path()
     ert_example_names = []
     for example in pkg_examples_path.iterdir():
         if example.is_dir() and "__" not in example.name:
@@ -96,6 +96,17 @@ def _build_argparser():
     return parser
 
 
+def _get_ert3_examples_path():
+    pkg_ert3_path = pathlib.Path(pkg.resource_filename("ert", "../ert3"))
+    pkg_examples_path = pkg_ert3_path / "examples"
+    # check that examples folder exist
+    if not pkg_examples_path.exists():
+        raise ert3.exceptions.IllegalWorkspaceOperation(
+            "Examples folder was not found."
+        )
+    return pkg_examples_path
+
+
 def _init(args):
     assert args.sub_cmd == "init"
 
@@ -103,19 +114,16 @@ def _init(args):
         ert3.workspace.initialize(pathlib.Path.cwd())
     else:
         example_name = args.example
-        pkg_examples_path = pathlib.Path(pkg.resource_filename("ert3", "examples"))
+        pkg_examples_path = _get_ert3_examples_path()
         pkg_example_path = pkg_examples_path / example_name
         wd_example_path = pathlib.Path.cwd() / example_name
-        # check that examples folder exist
-        if not pkg_examples_path.exists():
-            raise ert3.exceptions.IllegalWorkspaceOperation(
-                "Examples folder was not found."
-            )
+
         # check that examples folder contains provided 'example_name'
         if not pkg_example_path.exists():
             raise ert3.exceptions.IllegalWorkspaceOperation(
                 f"Example {example_name} is not a valid ert3 example."
             )
+
         # check that current working directory does not contain 'example_name' folder
         if not wd_example_path.is_dir():
             shutil.copytree(pkg_example_path, wd_example_path)
@@ -123,6 +131,7 @@ def _init(args):
             raise ert3.exceptions.IllegalWorkspaceOperation(
                 f"Your working directory already contains example {example_name}."
             )
+
         ert3.workspace.initialize(wd_example_path)
 
 
