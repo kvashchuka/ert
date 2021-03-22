@@ -97,8 +97,7 @@ def _build_argparser():
 
 
 def _get_ert3_examples_path():
-    pkg_ert3_path = pathlib.Path(pkg.resource_filename("ert", "../ert3"))
-    pkg_examples_path = pkg_ert3_path / "examples"
+    pkg_examples_path = pathlib.Path(pkg.resource_filename("ert", "../ert3_examples"))
     # check that examples folder exist
     if not pkg_examples_path.exists():
         raise ert3.exceptions.IllegalWorkspaceOperation(
