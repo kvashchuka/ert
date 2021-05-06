@@ -143,18 +143,18 @@ class PartialSnapshot:
 
             if e_type == ids.EVTYPE_FM_STEP_TIMEOUT:
                 step = self._snapshot.get_step(get_real_id(e_source), get_step_id(e_source))
-                for job_id, job in step["jobs"].items():
+                for job_id, job in step.jobs.items():
                     if job.status != state.JOB_STATE_FINISHED:
                         job_error = "The run is cancelled due to reaching MAX_RUNTIME"
                         self.update_job(
                             get_real_id(e_source),
                             get_step_id(e_source),
-                            get_job_id(job_id),
+                            job_id,
                             job=Job(
+                                status=state.JOB_STATE_FAILURE,
                                 error=job_error
                             ),
                         )
-                        break
 
         elif e_type in ids.EVGROUP_FM_JOB:
             start_time = None

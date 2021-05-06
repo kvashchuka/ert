@@ -88,7 +88,7 @@ class _LegacyEnsemble(_Ensemble):
                 timeout_cloudevent = CloudEvent(
                     {
                         "type": identifiers.EVTYPE_FM_STEP_TIMEOUT,
-                        "source": f"/ert/ee/{self._ee_id}/real/{run_args.iens}",
+                        "source": f"/ert/ee/{self._ee_id}/real/{run_args.iens}/step/0",
                         "id": str(uuid.uuid1()),
                     }
                 )
